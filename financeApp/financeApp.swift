@@ -1,6 +1,6 @@
 //
 //  financeAppApp.swift
-//  financeApp
+//  FinanceFlow
 //
 //  Created by Juan Sebastian Parra Quintero on 7/02/26.
 //

@@ -1,21 +1,64 @@
 //
 //  ContentView.swift
-//  financeApp
+//  FinanceFlow
 //
-//  Created by Juan Sebastian Parra Quintero on 7/02/26.
+//  Vista raíz con TabView: Dashboard, Transacciones.
+//  El botón + en la toolbar abre AddTransactionView.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @State private var viewModel = TransactionViewModel()
+    @State private var showingAddTransaction = false
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            NavigationStack {
+                DashboardView()
+                    .refreshable {
+                        await viewModel.loadData()
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button {
+                                showingAddTransaction = true
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                            }
+                        }
+                    }
+            }
+            .tabItem {
+                Label("Dashboard", systemImage: "chart.pie.fill")
+            }
+
+            NavigationStack {
+                TransactionListView()
+                    .refreshable {
+                        await viewModel.loadData()
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button {
+                                showingAddTransaction = true
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                            }
+                        }
+                    }
+            }
+            .tabItem {
+                Label("Transacciones", systemImage: "list.bullet")
+            }
         }
-        .padding()
+        .environment(viewModel)
+        .task {
+            await viewModel.loadData()
+        }
+        .sheet(isPresented: $showingAddTransaction) {
+            AddTransactionView()
+        }
     }
 }
 
