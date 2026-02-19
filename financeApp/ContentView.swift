@@ -9,8 +9,11 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var viewModel = TransactionViewModel()
+    @Environment(TransactionViewModel.self) private var viewModel
+    @Environment(AuthViewModel.self) private var authViewModel
     @State private var showingAddTransaction = false
+    @State private var showingExportSheet = false
+    @State private var showingImportFromGmail = false
 
     var body: some View {
         TabView {
@@ -20,6 +23,11 @@ struct ContentView: View {
                         await viewModel.loadData()
                     }
                     .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cerrar sesión", role: .destructive) {
+                                Task { await authViewModel.signOut() }
+                            }
+                        }
                         ToolbarItem(placement: .primaryAction) {
                             Button {
                                 showingAddTransaction = true
@@ -46,13 +54,32 @@ struct ContentView: View {
                                 Image(systemName: "plus.circle.fill")
                             }
                         }
+                        ToolbarItem(placement: .secondaryAction) {
+                            Button {
+                                showingImportFromGmail = true
+                            } label: {
+                                Label("Importar Gmail", systemImage: "envelope.badge")
+                            }
+                        }
+                        ToolbarItem(placement: .secondaryAction) {
+                            Button {
+                                showingExportSheet = true
+                            } label: {
+                                Label("Exportar", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    }
+                    .sheet(isPresented: $showingExportSheet) {
+                        ExportTransactionsView()
+                    }
+                    .sheet(isPresented: $showingImportFromGmail) {
+                        ImportFromGmailView()
                     }
             }
             .tabItem {
                 Label("Transacciones", systemImage: "list.bullet")
             }
         }
-        .environment(viewModel)
         .task {
             await viewModel.loadData()
         }
@@ -64,4 +91,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(TransactionViewModel())
+        .environment(AuthViewModel(authService: AuthService(provider: AuthProviderFactory.defaultProvider)))
 }

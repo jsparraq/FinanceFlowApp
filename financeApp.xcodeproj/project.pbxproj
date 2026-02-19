@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B791D81B2F379FF900C891B0 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B791D7C22F3796A200C891B0 /* Supabase */; };
+		B791D81C2F379FF900C891B0 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B791D8D22F3796A200C891B0 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B791D81B2F379FF900C891B0 /* Supabase in Frameworks */,
+				B791D81C2F379FF900C891B0 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = financeApp;
 			packageProductDependencies = (
 				B791D7C22F3796A200C891B0 /* Supabase */,
+				B791D8D22F3796A200C891B0 /* GoogleSignIn */,
 			);
 			productName = financeApp;
 			productReference = B791D7AD2F3796A200C891B0 /* financeApp.app */;
@@ -102,6 +105,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B791D7C12F3796A200C891B0 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				B791D8D12F3796A200C891B0 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B791D7AE2F3796A200C891B0 /* Products */;
@@ -260,8 +264,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2FP4WYRNAY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "GoogleSignIn-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -291,8 +297,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2FP4WYRNAY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "GoogleSignIn-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -347,6 +355,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		B791D8D12F3796A200C891B0 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -354,6 +370,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B791D7C12F3796A200C891B0 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		B791D8D22F3796A200C891B0 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B791D8D12F3796A200C891B0 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

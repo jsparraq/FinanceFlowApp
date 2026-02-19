@@ -7,8 +7,43 @@
 
 import SwiftUI
 
+/// Opción de filtro por tarjeta en la lista de transacciones
+private enum CardFilterOption: Hashable {
+    case all
+    case noCard
+    case card(UUID)
+}
+
 struct TransactionListView: View {
     @Environment(TransactionViewModel.self) private var viewModel
+    @State private var selectedFilter: CardFilterOption = .all
+
+    private var filteredTransactions: [Transaction] {
+        switch selectedFilter {
+        case .all:
+            return viewModel.transactions
+        case .noCard:
+            return viewModel.transactions.filter { $0.cardId == nil }
+        case .card(let id):
+            return viewModel.transactions.filter { $0.cardId == id }
+        }
+    }
+
+    private var emptyFilterTitle: String {
+        switch selectedFilter {
+        case .all: return "Sin transacciones"
+        case .noCard: return "Sin transacciones sin tarjeta"
+        case .card: return "Sin transacciones para esta tarjeta"
+        }
+    }
+
+    private var emptyFilterDescription: String {
+        switch selectedFilter {
+        case .all: return "Agrega tu primera transacción para comenzar el seguimiento."
+        case .noCard: return "No hay transacciones sin tarjeta asignada."
+        case .card: return "No hay transacciones asociadas a la tarjeta seleccionada."
+        }
+    }
 
     var body: some View {
         Group {
@@ -35,11 +70,35 @@ struct TransactionListView: View {
 
     private var transactionList: some View {
         List {
-            ForEach(viewModel.transactions) { transaction in
-                TransactionRowView(
-                    transaction: transaction,
-                    category: viewModel.category(for: transaction.categoryId)
-                )
+            Section {
+                Picker("Filtrar por tarjeta", selection: $selectedFilter) {
+                    Text("Todas").tag(CardFilterOption.all)
+                    Text("Sin tarjeta").tag(CardFilterOption.noCard)
+                    ForEach(viewModel.cards) { card in
+                        Label(card.name, systemImage: card.type.iconName)
+                            .tag(CardFilterOption.card(card.id))
+                    }
+                }
+                .pickerStyle(.menu)
+            } header: {
+                Text("Filtro")
+            }
+
+            if filteredTransactions.isEmpty {
+                ContentUnavailableView {
+                    Label(emptyFilterTitle, systemImage: "creditcard")
+                } description: {
+                    Text(emptyFilterDescription)
+                }
+            } else {
+                ForEach(filteredTransactions) { transaction in
+                    NavigationLink(value: transaction) {
+                    TransactionRowView(
+                        transaction: transaction,
+                        category: viewModel.category(for: transaction.categoryId),
+                        card: viewModel.card(for: transaction.cardId)
+                    )
+                }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         Task { await viewModel.deleteTransaction(transaction) }
@@ -47,7 +106,11 @@ struct TransactionListView: View {
                         Label("Eliminar", systemImage: "trash")
                     }
                 }
+                }
             }
+        }
+        .navigationDestination(for: Transaction.self) { transaction in
+            EditTransactionView(transaction: transaction)
         }
     }
 }
@@ -57,6 +120,7 @@ struct TransactionListView: View {
 struct TransactionRowView: View {
     let transaction: Transaction
     let category: Category?
+    let card: Card?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -83,9 +147,19 @@ struct TransactionRowView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(category?.name ?? "Sin categoría")
                 .font(.headline)
-            Text(transaction.date, style: .date)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                Text(transaction.date, style: .date)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let card {
+                    Text("•")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(card.name)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
             if let note = transaction.note, !note.isEmpty {
                 Text(note)
                     .font(.caption)

@@ -84,6 +84,28 @@ struct CurrencyFormatter {
         return "-\(formatted)"
     }
 
+    /// Formatea un monto para edición en TextField (sin símbolo de moneda)
+    func formatForInput(_ amount: Decimal, currency: CurrencyCode = .usd) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = currency.locale
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = currency.fractionDigits
+        return formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
+    }
+
+    /// Formatea un monto para exportación CSV: sin símbolo, sin separador de miles, solo punto decimal
+    /// Ej: 8900.00 (USD) o 8900 (COP/MXN como entero)
+    func formatForExport(_ amount: Decimal, currency: CurrencyCode = .usd) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "en_US_POSIX") // Evita comas en miles
+        formatter.usesGroupingSeparator = false
+        formatter.minimumFractionDigits = currency.fractionDigits
+        formatter.maximumFractionDigits = currency.fractionDigits
+        return formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
+    }
+
     /// Parsea un string a Decimal (para inputs de usuario)
     func parse(_ string: String, currency: CurrencyCode = .usd) -> Decimal? {
         let formatter = NumberFormatter()

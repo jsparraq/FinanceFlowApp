@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct AddTransactionView: View {
     @Environment(TransactionViewModel.self) private var viewModel
@@ -18,6 +19,10 @@ struct AddTransactionView: View {
     @State private var date = Date()
     @State private var note = ""
     @State private var showingError = false
+    @State private var showingConnectionResult = false
+    @State private var connectionResultMessage = ""
+    @State private var showingClipboardError = false
+    @State private var selectedCard: Card?
 
     private var filteredCategories: [Category] {
         viewModel.categories.filter { $0.transactionType == selectedType }
@@ -26,6 +31,18 @@ struct AddTransactionView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Button {
+                        pasteFromClipboard()
+                    } label: {
+                        Label("Pegar desde mensaje (SMS/banco)", systemImage: "doc.on.clipboard")
+                    }
+                } header: {
+                    Text("Importar")
+                } footer: {
+                    Text("Copia un mensaje de tu banco (ej. DAVIbank) y pégalo aquí para completar monto, descripción y fecha.")
+                }
+
                 Section("Tipo") {
                     Picker("Tipo", selection: $selectedType) {
                         ForEach(TransactionType.allCases) { type in
@@ -44,12 +61,49 @@ struct AddTransactionView: View {
                         .font(.title2)
                 }
 
+                Section("Tarjeta (opcional)") {
+                    if viewModel.cards.isEmpty {
+                        Text("No hay tarjetas. Agrega una desde el Dashboard.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Picker("Tarjeta", selection: $selectedCard) {
+                            Text("Ninguna").tag(nil as Card?)
+                            ForEach(viewModel.cards) { card in
+                                Label(card.name, systemImage: card.type.iconName)
+                                    .tag(card as Card?)
+                            }
+                        }
+                    }
+                }
+
                 Section("Categoría") {
-                    Picker("Categoría", selection: $selectedCategory) {
-                        Text("Seleccionar").tag(nil as Category?)
-                        ForEach(filteredCategories) { category in
-                            Label(category.name, systemImage: category.iconName)
-                                .tag(category as Category?)
+                    if filteredCategories.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let error = viewModel.errorMessage {
+                                Text("Error de conexión: \(error)")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            } else {
+                                Text("No hay categorías. Comprueba la conexión y que hayas ejecutado las migraciones en Supabase.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            HStack(spacing: 12) {
+                                Button("Reintentar") {
+                                    Task { await viewModel.loadData() }
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        Picker("Categoría", selection: $selectedCategory) {
+                            Text("Seleccionar").tag(nil as Category?)
+                            ForEach(filteredCategories) { category in
+                                Label(category.name, systemImage: category.iconName)
+                                    .tag(category as Category?)
+                            }
                         }
                     }
                 }
@@ -61,8 +115,6 @@ struct AddTransactionView: View {
                 Section("Nota (opcional)") {
                     TextField("Descripción o nota", text: $note, axis: .vertical)
                         .lineLimit(3...6)
-                    // TODO: Aquí se integrará el LLM para categorización automática
-                    // basada en el texto de la nota (ej: "uber comida" -> Transporte)
                 }
             }
             .navigationTitle("Nueva Transacción")
@@ -86,7 +138,30 @@ struct AddTransactionView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "No se pudo guardar la transacción.")
             }
+            .alert("Portapapeles", isPresented: $showingClipboardError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("No se encontró un mensaje de transacción válido en el portapapeles. Copia un SMS o notificación de tu banco (ej. \"Realizaste transacción en X por 49,600...\").")
+            }
         }
+    }
+
+    /// Lee el portapapeles, parsea un mensaje tipo banco/SMS y rellena el formulario.
+    private func pasteFromClipboard() {
+        let pasteboard = UIPasteboard.general
+        guard let text = pasteboard.string else {
+            showingClipboardError = true
+            return
+        }
+        guard let parsed = ClipboardTransactionParser.parse(text) else {
+            showingClipboardError = true
+            return
+        }
+        amountText = NSDecimalNumber(decimal: parsed.amount).stringValue
+        note = parsed.note
+        date = parsed.date
+        selectedType = parsed.type
+        selectedCategory = nil
     }
 
     private var isFormValid: Bool {
@@ -103,6 +178,7 @@ struct AddTransactionView: View {
         let transaction = Transaction(
             amount: amount,
             categoryId: category.id,
+            cardId: selectedCard?.id,
             date: date,
             note: note.isEmpty ? nil : note,
             type: selectedType
@@ -113,6 +189,7 @@ struct AddTransactionView: View {
             if viewModel.errorMessage == nil {
                 dismiss()
             } else {
+                print("[AddTransactionView] Error guardando: \(viewModel.errorMessage ?? "desconocido")")
                 showingError = true
             }
         }

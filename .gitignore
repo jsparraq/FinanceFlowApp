@@ -1,0 +1,106 @@
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+
+## Obj-C/Swift specific
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Build generated
+build/
+DerivedData/
+
+## Various settings
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+
+## Other
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+iOSInjectionProject/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Thumbnails
+Thumbs.db
+ehthumbs.db
+
+# IDE / Editor
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+**/Secrets.plist
+**/client_secret*.json
+*.xcconfig
+!default.xcconfig
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Tuist
+.tuist/
+
+# Mint
+.mint/
+
+# Google / Firebase config (sensitive)
+GoogleService-Info.plist
+GoogleSignIn-Info.plist
+client_secret*.json
+
+# Sample data with real emails/transactions (use gmail_nu_sample_sanitized.json for tests)
+scripts/gmail_nu_sample.json

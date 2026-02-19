@@ -1,0 +1,22 @@
+{
+  "id": "19c43d6e9d094965",
+  "threadId": "19c43d6e9d094965",
+  "labelIds": ["CATEGORY_UPDATES", "INBOX"],
+  "snippet": "Revisa los detalles de tu pago Pagaste con tu Cuenta de ahorros Nu Hola, [NOMBRE]: Acá está el detalle de tu pago Pagaste en: [COMERCIO] La cantidad de: $XXX.XXX,XX Más el",
+  "payload": {
+    "partId": "",
+    "mimeType": "text/html",
+    "filename": "",
+    "headers": [
+      { "name": "Delivered-To", "value": "usuario@ejemplo.com" },
+      { "name": "From", "value": "Nu <nu@nu.com.co>" },
+      { "name": "To", "value": "usuario@ejemplo.com" },
+      { "name": "Subject", "value": "Pagaste en [COMERCIO] con Cuenta Nu" },
+      { "name": "Date", "value": "Mon, 09 Feb 2026 19:18:03 +0000 (UTC)" }
+    ],
+    "body": { "size": 0, "data": null }
+  },
+  "sizeEstimate": 500,
+  "historyId": "9249781",
+  "internalDate": "1770664683000"
+}
