@@ -43,14 +43,14 @@ struct TransactionExportService {
     }
 
     /// Genera el contenido CSV de las transacciones filtradas
-    /// Columnas: Fecha, Tipo (Ingreso/Egreso), Nombre tarjeta, Tipo tarjeta, Cantidad, Categoría
+    /// Columnas: Fecha, Tipo (Ingreso/Egreso), Tipo transacción (Fijo/Variable), Nombre tarjeta, Tipo tarjeta, Cantidad, Categoría
     static func generateCSV(
         transactions: [Transaction],
         categories: [Category],
         cards: [Card],
         currency: CurrencyCode
     ) -> String {
-        let header = "Fecha,Tipo,Nombre tarjeta,Tipo tarjeta,Cantidad,Categoría"
+        let header = "Fecha,Tipo,Tipo transacción,Nombre tarjeta,Tipo tarjeta,Cantidad,Categoría"
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         dateFormatter.locale = Locale(identifier: "es")
@@ -67,7 +67,8 @@ struct TransactionExportService {
             let amount = CurrencyFormatter.shared.formatForExport(tx.amount, currency: currency)
             let category = categoryLookup[tx.categoryId]?.name ?? "Sin categoría"
 
-            return [dateStr, tipo, escapeCSV(cardName), escapeCSV(cardType), amount, escapeCSV(category)]
+            let tipoTransaccion = tx.fixedVariable.displayName
+            return [dateStr, tipo, tipoTransaccion, escapeCSV(cardName), escapeCSV(cardType), amount, escapeCSV(category)]
                 .joined(separator: ",")
         }
 

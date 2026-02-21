@@ -8,6 +8,21 @@
 
 import Foundation
 
+/// Naturaleza de la transacción: fija (recurrente) o variable (ocasional)
+enum TransactionFixedVariable: String, Codable, CaseIterable, Identifiable {
+    case fixed = "fixed"
+    case variable = "variable"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .fixed: return "Fijo"
+        case .variable: return "Variable"
+        }
+    }
+}
+
 /// Tipo de transacción: ingreso o gasto
 enum TransactionType: String, Codable, CaseIterable, Identifiable {
     case income = "income"
@@ -36,9 +51,12 @@ struct Transaction: Identifiable, Codable, Equatable, Hashable {
     var amount: Decimal
     var categoryId: UUID
     var cardId: UUID?
+    /// Tarjeta de crédito que se está pagando (solo cuando es un pago de tarjeta)
+    var creditCardPaidId: UUID?
     var date: Date
     var note: String?
     var type: TransactionType
+    var fixedVariable: TransactionFixedVariable
     var createdAt: Date?
     var updatedAt: Date?
 
@@ -47,9 +65,11 @@ struct Transaction: Identifiable, Codable, Equatable, Hashable {
         amount: Decimal,
         categoryId: UUID,
         cardId: UUID? = nil,
+        creditCardPaidId: UUID? = nil,
         date: Date = Date(),
         note: String? = nil,
         type: TransactionType,
+        fixedVariable: TransactionFixedVariable = .variable,
         createdAt: Date? = nil,
         updatedAt: Date? = nil
     ) {
@@ -57,9 +77,11 @@ struct Transaction: Identifiable, Codable, Equatable, Hashable {
         self.amount = amount
         self.categoryId = categoryId
         self.cardId = cardId
+        self.creditCardPaidId = creditCardPaidId
         self.date = date
         self.note = note
         self.type = type
+        self.fixedVariable = fixedVariable
         self.createdAt = createdAt ?? date
         self.updatedAt = updatedAt ?? date
     }
@@ -79,9 +101,11 @@ struct Transaction: Identifiable, Codable, Equatable, Hashable {
         case amount
         case categoryId = "category_id"
         case cardId = "card_id"
+        case creditCardPaidId = "credit_card_paid_id"
         case date
         case note
         case type
+        case fixedVariable = "tipo"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -96,9 +120,11 @@ struct TransactionRow: Codable {
     let amount: String // cifrado en base64
     let categoryId: UUID
     let cardId: UUID?
+    let creditCardPaidId: UUID?
     let date: Date
     let note: String?
     let type: String
+    let fixedVariable: String?
     let createdAt: Date?
     let updatedAt: Date?
 
@@ -107,9 +133,11 @@ struct TransactionRow: Codable {
         case amount
         case categoryId = "category_id"
         case cardId = "card_id"
+        case creditCardPaidId = "credit_card_paid_id"
         case date
         case note
         case type
+        case fixedVariable = "tipo"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -121,9 +149,11 @@ struct TransactionEncoded: Encodable {
     let amount: String // cifrado en base64
     let categoryId: UUID
     let cardId: UUID?
+    let creditCardPaidId: UUID?
     let date: Date
     let note: String?
     let type: String
+    let fixedVariable: String
     let createdAt: Date?
     let updatedAt: Date?
 
@@ -132,9 +162,11 @@ struct TransactionEncoded: Encodable {
         case amount
         case categoryId = "category_id"
         case cardId = "card_id"
+        case creditCardPaidId = "credit_card_paid_id"
         case date
         case note
         case type
+        case fixedVariable = "tipo"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

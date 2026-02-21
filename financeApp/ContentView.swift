@@ -28,13 +28,6 @@ struct ContentView: View {
                                 Task { await authViewModel.signOut() }
                             }
                         }
-                        ToolbarItem(placement: .primaryAction) {
-                            Button {
-                                showingAddTransaction = true
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                            }
-                        }
                     }
             }
             .tabItem {

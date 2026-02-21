@@ -17,6 +17,7 @@ struct EditTransactionView: View {
     @State private var amountText: String
     @State private var selectedCategory: Category?
     @State private var selectedCard: Card?
+    @State private var selectedFixedVariable: TransactionFixedVariable
     @State private var date: Date
     @State private var note: String
     @State private var showingError = false
@@ -26,6 +27,7 @@ struct EditTransactionView: View {
         _amountText = State(initialValue: NSDecimalNumber(decimal: transaction.amount).stringValue)
         _date = State(initialValue: transaction.date)
         _note = State(initialValue: transaction.note ?? "")
+        _selectedFixedVariable = State(initialValue: transaction.fixedVariable)
     }
 
     /// Categorías filtradas por el tipo de la transacción (ingreso o gasto).
@@ -44,6 +46,19 @@ struct EditTransactionView: View {
                     Text("Tipo")
                 } footer: {
                     Text("El tipo de transacción (ingreso o gasto) no se puede modificar.")
+                }
+
+                Section {
+                    Picker("Fijo o variable", selection: $selectedFixedVariable) {
+                        ForEach(TransactionFixedVariable.allCases) { fv in
+                            Text(fv.displayName).tag(fv)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Naturaleza")
+                } footer: {
+                    Text("Fijo: gastos/ingresos recurrentes. Variable: ocasionales.")
                 }
 
                 Section("Monto") {
@@ -135,6 +150,7 @@ struct EditTransactionView: View {
         updated.amount = amount
         updated.categoryId = category.id
         updated.cardId = selectedCard?.id
+        updated.fixedVariable = selectedFixedVariable
         updated.date = date
         updated.note = note.isEmpty ? nil : note
         updated.updatedAt = Date()
@@ -157,7 +173,8 @@ struct EditTransactionView: View {
         categoryId: UUID(),
         date: Date(),
         note: "Prueba",
-        type: .expense
+        type: .expense,
+        fixedVariable: .variable
     ))
     .environment(TransactionViewModel())
 }

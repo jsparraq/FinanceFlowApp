@@ -143,9 +143,15 @@ struct TransactionRowView: View {
         }
     }
 
+    private var transactionTitle: String {
+        let desc = transaction.note ?? ""
+        if desc.isEmpty { return "Sin descripción" }
+        return desc.count > 10 ? String(desc.prefix(10)) + "…" : desc
+    }
+
     private var transactionInfo: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(category?.name ?? "Sin categoría")
+            Text(transactionTitle)
                 .font(.headline)
             HStack(spacing: 4) {
                 Text(transaction.date, style: .date)
@@ -160,7 +166,7 @@ struct TransactionRowView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            if let note = transaction.note, !note.isEmpty {
+            if let note = transaction.note, !note.isEmpty, note.count > 10 {
                 Text(note)
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -228,6 +228,81 @@ final class TransactionViewModel {
         return cards.first { $0.id == id }
     }
 
+    /// Saldo/deuda de una tarjeta de crédito según el período de corte.
+    /// Período: desde día de corte del mes N hasta día antes del corte del mes N+1 (Opción 1).
+    /// Balance = gastos en el período menos pagos hechos a la tarjeta en el período.
+    /// Requiere que la tarjeta tenga cutoff_day definido (obligatorio para crédito).
+    func creditCardBalance(card: Card) -> Decimal {
+        guard card.isCredit, let cutoff = card.cutoffDay else { return 0 }
+        let period = Self.billingPeriodEnd(cutoffDay: cutoff, referenceDate: Date())
+        guard let (start, end) = period else { return 0 }
+
+        let expenses = transactions
+            .filter { $0.type == .expense && $0.cardId == card.id && isDateInRange($0.date, start: start, end: end) }
+            .reduce(0) { $0 + $1.amount }
+        let payments = transactions
+            .filter { $0.creditCardPaidId == card.id && isDateInRange($0.date, start: start, end: end) }
+            .reduce(0) { $0 + $1.amount }
+        return expenses - payments
+    }
+
+    /// Calcula el período de facturación cerrado más reciente.
+    /// Retorna (start, end) del período: desde cutoff N hasta cutoff-1 del mes siguiente.
+    /// Si cutoff es 1: período = mes completo del mes anterior.
+    private static func billingPeriodEnd(cutoffDay: Int, referenceDate: Date) -> (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        let todayDay = calendar.component(.day, from: referenceDate)
+
+        let periodEnd: Date
+        if cutoffDay == 1 {
+            // Período = mes completo. Último cerrado = mes anterior completo.
+            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: referenceDate),
+                  let start = calendar.date(bySetting: .day, value: 1, of: prevMonth),
+                  let range = calendar.range(of: .day, in: .month, for: prevMonth),
+                  let lastDay = range.last,
+                  let end = calendar.date(bySetting: .day, value: lastDay, of: prevMonth) else { return nil }
+            return (start, end)
+        }
+
+        if todayDay >= cutoffDay {
+            // Período que acaba de cerrar: cutoff de este mes hasta cutoff-1 de este mes (no, hasta cutoff-1 del mes siguiente)
+            // Último cerrado: cutoff mes actual hasta día antes del cutoff del mes actual... no.
+            // Período: Jan 15 - Feb 14. Si hoy Feb 21, cutoff 15: cerrado = Jan 15 - Feb 14.
+            // periodEnd = Feb 14 = cutoff-1 del mes actual
+            guard let end = calendar.date(bySetting: .day, value: cutoffDay - 1, of: referenceDate) else { return nil }
+            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: end),
+                  let start = calendar.date(bySetting: .day, value: cutoffDay, of: prevMonth) else { return nil }
+            return (start, end)
+        } else {
+            // Período anterior: cutoff mes pasado hasta cutoff-1 del mes actual
+            guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: referenceDate),
+                  let end = calendar.date(bySetting: .day, value: cutoffDay - 1, of: prevMonth) else { return nil }
+            guard let prevPrevMonth = calendar.date(byAdding: .month, value: -1, to: prevMonth),
+                  let start = calendar.date(bySetting: .day, value: cutoffDay, of: prevPrevMonth) else { return nil }
+            return (start, end)
+        }
+    }
+
+    private var calendar: Calendar { Calendar.current }
+
+    private func isDateInRange(_ date: Date, start: Date, end: Date) -> Bool {
+        let startOfDay = calendar.startOfDay(for: start)
+        let endOfDay = calendar.startOfDay(for: end)
+        let dateStart = calendar.startOfDay(for: date)
+        return dateStart >= startOfDay && dateStart <= endOfDay
+    }
+
+    /// Tarjetas que pueden usarse como fuente de pago (efectivo y débito)
+    var paymentSourceCards: [Card] {
+        cards.filter { $0.type == .cash || $0.type == .debit }
+    }
+
+    /// Categoría para pagos de tarjeta de crédito (o "Otros" como fallback)
+    var creditCardPaymentCategory: Category? {
+        categories.first { $0.name == "Pago de tarjeta de crédito" && $0.transactionType == .expense }
+            ?? categories.first { $0.name == "Otros" && $0.transactionType == .expense }
+    }
+
     // MARK: - Tarjetas
 
     /// Agrega una tarjeta

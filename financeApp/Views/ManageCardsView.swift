@@ -12,6 +12,7 @@ struct ManageCardsView: View {
     @State private var showingAddCard = false
     @State private var cardToEdit: Card?
     @State private var cardToDelete: Card?
+    @State private var cardToPay: Card?
     @State private var showingDeleteConfirmation = false
 
     private let columns = [
@@ -43,6 +44,7 @@ struct ManageCardsView: View {
                                 cardToDelete = card
                                 showingDeleteConfirmation = true
                             },
+                            onPay: card.isCredit ? { cardToPay = card } : nil,
                             canDelete: !card.isSystemEfectivo
                         )
                     }
@@ -58,6 +60,9 @@ struct ManageCardsView: View {
         }
         .sheet(item: $cardToEdit) { card in
             EditCardView(card: card)
+        }
+        .sheet(item: $cardToPay) { card in
+            PayCreditCardView(creditCard: card)
         }
         .alert("Eliminar tarjeta", isPresented: $showingDeleteConfirmation) {
             Button("Cancelar", role: .cancel) {
@@ -109,7 +114,12 @@ private struct CardTile: View {
     let card: Card
     let onTap: () -> Void
     let onDelete: () -> Void
+    let onPay: (() -> Void)?
     let canDelete: Bool
+
+    private var creditBalance: Decimal {
+        card.isCredit ? viewModel.creditCardBalance(card: card) : 0
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -136,10 +146,22 @@ private struct CardTile: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if card.isCredit, let limit = card.creditLimit {
-                Text(CurrencyFormatter.shared.format(limit, currency: viewModel.selectedCurrency))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+            if card.isCredit {
+                Text("Se debe: \(CurrencyFormatter.shared.format(creditBalance, currency: viewModel.selectedCurrency))")
+                    .font(.subheadline)
+                    .foregroundStyle(creditBalance > 0 ? .red : .secondary)
+            }
+
+            if card.isCredit, let onPay {
+                Button {
+                    onPay()
+                } label: {
+                    Label("Pagar", systemImage: "creditcard.and.1234")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
             }
         }
         .padding()

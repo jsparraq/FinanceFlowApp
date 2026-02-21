@@ -70,9 +70,11 @@ final class FinanceRepository {
             amount: encryptedAmount,
             categoryId: transaction.categoryId,
             cardId: transaction.cardId,
+            creditCardPaidId: transaction.creditCardPaidId,
             date: transaction.date,
             note: transaction.note,
             type: transaction.type.rawValue,
+            fixedVariable: transaction.fixedVariable.rawValue,
             createdAt: transaction.createdAt,
             updatedAt: transaction.updatedAt
         )
@@ -91,9 +93,11 @@ final class FinanceRepository {
             amount: encryptedAmount,
             categoryId: transaction.categoryId,
             cardId: transaction.cardId,
+            creditCardPaidId: transaction.creditCardPaidId,
             date: transaction.date,
             note: transaction.note,
             type: transaction.type.rawValue,
+            fixedVariable: transaction.fixedVariable.rawValue,
             createdAt: transaction.createdAt,
             updatedAt: transaction.updatedAt
         )
@@ -120,14 +124,17 @@ final class FinanceRepository {
         guard let type = TransactionType(rawValue: row.type) else {
             throw FinanceRepositoryError.decodeError
         }
+        let fixedVariable = (row.fixedVariable.flatMap { TransactionFixedVariable(rawValue: $0) }) ?? .variable
         return Transaction(
             id: row.id,
             amount: amount,
             categoryId: row.categoryId,
             cardId: row.cardId,
+            creditCardPaidId: row.creditCardPaidId,
             date: row.date,
             note: row.note,
             type: type,
+            fixedVariable: fixedVariable,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt
         )

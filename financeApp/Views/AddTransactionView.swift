@@ -16,6 +16,7 @@ struct AddTransactionView: View {
     @State private var amountText = ""
     @State private var selectedCategory: Category?
     @State private var selectedType: TransactionType = .expense
+    @State private var selectedFixedVariable: TransactionFixedVariable = .variable
     @State private var date = Date()
     @State private var note = ""
     @State private var showingError = false
@@ -53,6 +54,19 @@ struct AddTransactionView: View {
                     .onChange(of: selectedType) { _, _ in
                         selectedCategory = nil
                     }
+                }
+
+                Section {
+                    Picker("Fijo o variable", selection: $selectedFixedVariable) {
+                        ForEach(TransactionFixedVariable.allCases) { fv in
+                            Text(fv.displayName).tag(fv)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Naturaleza")
+                } footer: {
+                    Text("Fijo: gastos/ingresos recurrentes (renta, salario). Variable: ocasionales (compras, salidas).")
                 }
 
                 Section("Monto") {
@@ -181,7 +195,8 @@ struct AddTransactionView: View {
             cardId: selectedCard?.id,
             date: date,
             note: note.isEmpty ? nil : note,
-            type: selectedType
+            type: selectedType,
+            fixedVariable: selectedFixedVariable
         )
 
         Task {

@@ -145,6 +145,6 @@ struct EditCardView: View {
 }
 
 #Preview {
-    EditCardView(card: Card(name: "Visa Principal", type: .credit, creditLimit: 5000000))
+    EditCardView(card: Card(name: "Visa Principal", type: .credit, creditLimit: 5000000, cutoffDay: 15, paymentDueDay: 25))
         .environment(TransactionViewModel())
 }
